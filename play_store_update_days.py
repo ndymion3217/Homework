@@ -1,36 +1,16 @@
 # -*- coding: utf-8 -*-
 
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
-import SocketServer
 import sys
 import requests
 import re
 import datetime
 
+
 def timestamp():  # 현재 시간을 [0000-00-00 00:00:00] 형식으로 리턴
     return '[' +datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ']'
 
-packages = \
-    [
-        ['유비페이', 'com.harex.android.ubpay'],
-        ['이지스페이', 'com.harex.android.alltheGate'],
-
-        ['유비포스', 'com.harex.android.apppos'],
-        ['우체국포스', 'com.harex.android.postpos'],
-
-        ['투유금융', 'com.knb.mbr'],
-        ['투유뱅크 개인', 'com.knb.psb'],
-        ['포스트페이', 'com.epost.psf.ss'],
-        ['썸뱅크', 'kr.co.bsbank.mobilebank'],
-        ['J뱅크', 'com.jejubank.jbank.android'],
-
-        ['포항성모병원', 'kr.spacesoft.mmc.phsmh'],
-
-        ['미납OK', 'com.deepple.hpvm'],
-
-        ['컬쳐랜드', 'com.cultureland.ver2'],
-        ['공영홈쇼핑', 'com.pub.fm']
-    ]  #
+packages =
 
 PAGE_REFRESH_TIME = sys.argv[2]  # 페이지 새로고침 변수를 세번쨰 시스템 변수로 할당
 PORT_NUMBER = int(sys.argv[1])  # 포트 번호 변수를 두번째 시스템 변수로 할당
