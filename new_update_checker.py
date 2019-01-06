@@ -1,30 +1,31 @@
-# -*- coding: utf-8 -*-
-
-from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import sys
+import socketserver
 import requests
 import re
 import datetime
 
 
 def timestamp():  # 현재 시간을 [0000-00-00 00:00:00] 형식으로 리턴
-    return '[' +datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ']'
+    return '[' + datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ']'
 
-packages =
+packages = []
 
 PAGE_REFRESH_TIME = sys.argv[2]  # 페이지 새로고침 변수를 세번쨰 시스템 변수로 할당
 PORT_NUMBER = int(sys.argv[1])  # 포트 번호 변수를 두번째 시스템 변수로 할당
+
+
 class PlayStoreHandler(BaseHTTPRequestHandler):
     def get_play_update_days_string(self, v):  # 변수를 포함한 리스트를 매개변수로 사용
         # en
-        #response = requests.get('https://play.google.com/store/apps/details?id=' + sys.argv[1])
+        # response = requests.get('https://play.google.com/store/apps/details?id=' + sys.argv[1])
         # kr
-        response = requests.get('https://play.google.com/store/apps/details?id=' + v[1] + '&hl=ko')  # 패키지 변수에 지정되어있던 두번째 원소(주소값)을 받아 응답객체를 만듦
+        response = requests.get('https://play.google.com/store/apps/details?id=' + v[
+            1] + '&hl=ko')  # 패키지 변수에 지정되어있던 두번째 원소(주소값)을 받아 응답객체를 만듦
         print(timestamp(), v[0], v[1], str(response.status_code))  # 시간과 페이지 이름, 주소, 객체의 상태를 출력함함
         # #print r.text
 
         # en
-        #r = re.search(u'(January|Feburary|March|April|May|June|July|August|September|October|November|December)( +)([1-9]|[12][0-9]|3[01])(, +)(20[0-9][0-9])', response.text)
+        # r = re.search(u'(January|Feburary|March|April|May|June|July|August|September|October|November|December)( +)([1-9]|[12][0-9]|3[01])(, +)(20[0-9][0-9])', response.text)
         # kr
         r = re.search(u'(20[0-9][0-9])년( +)([1-9]|1[0-2])월( +)([1-9]|[12][0-9]|3[01])일', response.text)
 
@@ -35,25 +36,26 @@ class PlayStoreHandler(BaseHTTPRequestHandler):
         print(timestamp(), r.group(0))  # 현재 시간과 ??를 출력
         year = r.group(1)  # r.search에서 검색한 1번쨰 그룹을 year변수에 할당
         month = r.group(3)  # 3번째 그룹을 month변수에 할당
-        day =  r.group(5)  # 5번째 그룹을 day변수에 할당
-        update = datetime.datetime(int(year), int(month), int(day), 0, 0, 0, 0)  # 실제 날짜가 적용된 datetime 객체를 update변수에 할당
+        day = r.group(5)  # 5번째 그룹을 day변수에 할당
+        update = datetime.datetime(int(year), int(month), int(day), 0, 0, 0,
+                                   0)  # 실제 날짜가 적용된 datetime 객체를 update변수에 할당
 
         later = datetime.datetime.now() - update  # 마지막 업데이트로부터 지금까지 지난시간을 later변수에 할당 ??
 
-        ret  = v[0] + ', '  'last update: ' + update.strftime('%Y-%m-%d') + ', ' + str(later.days) + ' days ago'
-        #print timestamp(), ret
+        ret = v[0] + ', '  'last update: ' + update.strftime('%Y-%m-%d') + ', ' + str(later.days) + ' days ago'
+        # print timestamp(), ret
         return [later.days, ret]  # 마지막 업데이트를 반환
 
-    #Handler for the GET requests
+    # Handler for the GET requests
     def do_GET(self):
         if self.path == '/favicon.ico':
             return
 
         self.send_response(200)  # 응답을 보낼 시간 설정
-        self.send_header('Content-type','text/html; charset=utf-8')
+        self.send_header('Content-type', 'text/html; charset=utf-8')
         self.end_headers()
         # Send the html message
-        #self.wfile.write("Hello World !")
+        # self.wfile.write("Hello World !")
         play_ret_list = list()
         for v in packages:
             play_ret_list.append(self.get_play_update_days_string(v))
@@ -67,10 +69,9 @@ class PlayStoreHandler(BaseHTTPRequestHandler):
         output += ');'
         output += '</script>'
         output += '</head>'
-        
+
         output += '<body>'
         for l in play_ret_list:
-            color = ''
             if l[0] == 0:
                 color = 'red'
             elif l[0] <= 1:
@@ -91,18 +92,20 @@ class PlayStoreHandler(BaseHTTPRequestHandler):
         print(timestamp(), output)
         return
 
-try:
-    if len(sys.argv) != 3:  # 시스템변수가 3개가 아닐때
-        print(timestamp(), 'invalid')  # 현재시간과 무효를 출력
-        sys.exit()  # 프로그램 종료
+def run_server(port):  # port의 초기값은 4000
+  host = ''  # 호스트 이름
+  with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:  # s 라는 변수로 서버를 가동
+    s.bind((host, port))  # 호스트이름과 포트를 바인딩한다
+    s.listen(5)  # 접속이 오는지 듣는 함수를 명시 매개변수는 최대 대기열의 숫자
+    conn, addr = s.accept()  # 접속자, 주소를 반환받아 변수에 할당
+    msg = conn.recv(1024)  # 1024바이트의 데이터를 받아 변수에 할당
+    print(f'{conn, msg.decode()}')  # msg객체를 디코딩하여 출력
+    conn.sendall(msg)  # msg객체를 돌려보낸다.
+    conn.close()  # 접속자를 닫는다.
 
-    #Create a web server and define the handler to manage the
-    #incoming request
-    server = HTTPServer(('', PORT_NUMBER), PlayStoreHandler)  # 서버를 생성해 변수에 할당
-    print(timestamp(), 'Started httpserver on port ' , PORT_NUMBER)  # 현재시간과 ~포트에 서버가 시작됐다고 출력
-
-    #Wait forever for incoming htto requests
-    server.serve_forever()  # 끄지않는한 계속 서버 가동
-except KeyboardInterrupt:  # 키보드가 눌리는 에러가 났을때
-    print(timestamp(), '^C received, shutting down the web server')  # 현재시간과 ^C가 눌려서 웹서버를 종료 한다는 메세지 출력
-    server.socket.close()  # 서버를 종료
+if __name__ == '__main__':
+  #run_server(PORT_NUMBER)
+    v = ['유비페이', 'com.harex.android.ubpay']
+    response = requests.get('https://play.google.com/store/apps/details?id=' + v[
+      1] + '&hl=ko')  # 패키지 변수에 지정되어있던 두번째 원소(주소값)을 받아 응답객체를 만듦
+    print(timestamp(), v[0], v[1], str(response.status_code))
