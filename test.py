@@ -23,7 +23,7 @@ def main():
             print(timestamp(), i[0], 'invalid..')
             return i[0] + 'invalid..'  # 페이지 이름과 invalid를 반환
 
-        print(timestamp(), r.group(0))  # 현재 시간과 ??를 출력
+        #print(timestamp(), r.group(0))  # 현재 시간과 ??를 출력
         year = r.group(1)  # r.search에서 검색한 1번쨰 그룹을 year변수에 할당
         month = r.group(3)  # 3번째 그룹을 month변수에 할당
         day = r.group(5)  # 5번째 그룹을 day변수에 할당
@@ -33,11 +33,12 @@ def main():
 
         ret = i[0] + ', '  'last update: ' + update.strftime('%Y-%m-%d') + ', ' + str(later.days) + ' days ago'
         # print timestamp(), ret
-        slack = slacker.Slacker(config.token)
-        slack.chat.post_message(config.channel, '{} {}'.format(later.days, ret))
-        return [later.days, ret]  # 마지막 업데이트를 반환
+        if ret not in today and later.days == 0:
+            today.append(ret)
+            slack = slacker.Slacker(config.token)
+            slack.chat.post_message(config.channel, '( {} ) 앱의 업데이트가 발견되었습니다.'.format(i[0]))
 
-
+today = []
 while True:
     main()
     time.sleep(config.page_refresh)
