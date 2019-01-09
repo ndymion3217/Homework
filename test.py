@@ -20,6 +20,10 @@ def main():
 
         r = re.search(u'(20[0-9][0-9])년( +)([1-9]|1[0-2])월( +)([1-9]|[12][0-9]|3[01])일', response.text)
 
+        if response.status_code == 404:
+            slack.chat.post_message(config.channel, '( {} ) 앱이 구글스토어에 존재하지 않습니다.'.format(i[0]))
+            return
+
         if r is None:  # 설정한 시간이 발견되지 않으면
             print(timestamp(), i[0], 'invalid..')
             return i[0] + 'invalid..'  # 페이지 이름과 invalid를 반환
