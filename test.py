@@ -12,6 +12,7 @@ def timestamp():  # 현재 시간을 [0000-00-00 00:00:00] 형식으로 리턴
     return '[' +datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S') + ']'
 
 def main():
+    slack = slacker.Slacker(config.token)
     for i in config.packages:
         response = requests.get('https://play.google.com/store/apps/details?id=' + i[
             1] + '&hl=ko')  # 패키지 변수에 지정되어있던 두번째 원소(주소값)을 받아 응답객체를 만듦
@@ -35,7 +36,6 @@ def main():
         # print timestamp(), ret
         if ret not in today and later.days == 0:
             today.append(ret)
-            slack = slacker.Slacker(config.token)
             slack.chat.post_message(config.channel, '( {} ) 앱의 업데이트가 발견되었습니다.'.format(i[0]))
 
 today = []
